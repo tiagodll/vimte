@@ -20,7 +20,7 @@
         document.querySelectorAll('pre.code').forEach((el) => {
           el.textContent = document.getElementById("codestring").innerText;
           hljs.highlightElement(el);
-          document.getElementById("statusbar").innerText = `[${model.mode}] ${model.line}:${model.col} - ${code[model.line].length}`;
+          document.getElementById("statusbar").innerText = `[${model.mode}] ${model.caret.line}:${model.caret.col} - ${code[model.caret.line].length}`;
         })
       })
     </script>
@@ -48,21 +48,33 @@ internal class Program
 </pre>
         <pre class="code"></pre>
         <div id="cursor">_</div>
+        <div id="target">_</div>
     </div>
     <div id="statusbar"></div>
     <script type="text/javascript">
       let model = {
+        counter: 0,
         mode: "normal",
-        col: 0,
-        line: 0,
+        caret: {col: 0, line: 0},
+        target: {col: 0, line: 0},
         partialKey: "",
-        getCaret(){ return {col: this.col, line: this.line}; },
-        setCaret(pos){ this.col = pos.col; this.line = pos.line; },
+        getCaret(){ return {col: this.caret.col, line: this.caret.line}; },
+        setCaret(pos){ this.caret.col = pos.col; this.caret.line = pos.line; },
       }
       const nonSpaceDelimiters = ['(', '[', '{', ')', ']', '}', '.', ',', ';']
       const delimiters = [...nonSpaceDelimiters, ' ', '']
       let code = document.getElementById("codestring").innerText.split("\n");
       normalMode = NewNormalMode(code);
+
+
+      // retry how many times?
+      //
+      var i=0
+      do{
+        model.target.line = Math.floor(Math.random()*code.length);
+        model.target.col = Math.floor(Math.random()*code[model.target.line].length);
+      }while(i++<50 && code[model.caret.line].charAt(model.caret.col) == " ")
+      setObjectPosition(document.getElementById("target"), model.target);
 
       window.addEventListener('keydown', (e) => {
         switch (e.code){
@@ -74,7 +86,7 @@ internal class Program
               case 'insert': processKeyInsertMode(e.key);break;
             }
         }
-        document.getElementById("statusbar").innerText = `[${model.mode}] ${model.line}:${model.col} - ${code[model.line].length} - ${model.partialKey} ${e.code}`;
+        document.getElementById("statusbar").innerText = `[${model.mode}] ${model.caret.line}:${model.caret.col} - ${code[model.caret.line].length} - ${model.partialKey} ${e.code} # ${model.counter}`;
       })
 
       function processKeyNormalMode(key) {
@@ -101,13 +113,29 @@ internal class Program
           case "i": model.mode = 'insert'; break;
           case "v": model.mode = 'visual'; break;
         }
-        let cursorCol = pos.col < code[pos.line].length ? pos.col : code[pos.line].length - 1;
-        if(cursorCol < 0)
-          cursorCol = 0;
 
-        c.style.left = (cursorCol * 1.23) + "ch";
-        c.style.top = (pos.line * 1.2) + "rem";
+        if(pos.col < 0)
+          pos.col = 0;
+        if(pos.line >= code.length)
+          pos.line = code.length-1;
+
+        if(model.partialKey == null || model.partialKey == "")
+          model.counter++;
+
         model.setCaret(pos);
+        let uiCaret = {
+          line: pos.line,
+          col: (pos.col > code[pos.line].length) ? code[pos.line].length - 1 : pos.col
+        };
+        setObjectPosition(c, uiCaret);
+
+        if(model.caret.line == model.target.line && model.caret.col == model.target.col)
+          alert("YAY!!!!")
+      }
+
+      function setObjectPosition(target, pos){
+        target.style.left = (pos.col * 1.23) + "ch";
+        target.style.top = (pos.line * 1.2) + "rem";
       }
       function processKeyInsertMode(key) {
         let c=document.getElementById('cursor');
