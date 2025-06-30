@@ -74,16 +74,20 @@ internal class Program
               case 'insert': processKeyInsertMode(e.key);break;
             }
         }
-        document.getElementById("statusbar").innerText = `[${model.mode}] ${model.line}:${model.col} - ${code[model.line].length} - ${e.code}`;
+        document.getElementById("statusbar").innerText = `[${model.mode}] ${model.line}:${model.col} - ${code[model.line].length} - ${model.partialKey} ${e.code}`;
       })
 
       function processKeyNormalMode(key) {
         let c = document.getElementById('cursor');
         let pos = model.getCaret();
-        switch(key){
+        let command = model.partialKey == null ? key : model.partialKey + key;
+
+        switch(command){
           case "0": pos.col = 0; break;
           case "$": pos.col = code[pos.line].length; break;
           case "G": pos.line = code.length -1; break;
+          case "g": model.partialKey = "g"; break;
+          case "gg": pos.line = 0; model.partialKey = null; break
 
           case "h": pos = normalMode.moveLeft(pos);break;
           case "j": pos = normalMode.moveDown(pos);break;
