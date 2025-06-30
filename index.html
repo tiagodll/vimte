@@ -1,19 +1,56 @@
 <html>
     <head>
         <title>vim game</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
+        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/csharp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/csharp.min.js"></script> -->
         <!-- HTML -->
+        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css"> -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/vs.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css" />
         <link rel="stylesheet" href="./app.css" />
 
-        <script src="./asd"></script>
+        <script src="./navigationHelper.js"></script>
+        <script src="./normalMode.js"></script>
     </head>
 </head>
 <body>
+    <script type="module">
+      import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js';
+      //  and it's easy to individually load additional languages
+      import csharp from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/csharp.min.js';
+      hljs.registerLanguage('csharp', csharp);
+
+      document.addEventListener('DOMContentLoaded', (event) => {
+        document.querySelectorAll('pre.code').forEach((el) => {
+          el.textContent = document.getElementById("codestring").innerText;
+          hljs.highlightElement(el);
+          document.getElementById("statusbar").innerText = `[${mode}] ${line}:${col} - ${code[line].length}`;
+        })
+      })
+    </script>
     <div class="code-container">
+        <pre id="codestring" class="codestring" style="display:none">
+using System;
+using System.Linq;
+using xxx;
+
+namespace dis_test;
+internal class Program
+{
+    public static void Main(string[] args)
+    {
+        var docid = "14724c8a0n8anwpw98nawlwiuhwL*$rwy8";
+        for(int i=0; i<2; i++)
+        {
+            var asd = new DisClient(asd, qwe);
+            asd.value = "new value";
+
+            Console.Write(asd.ToString());
+        }
+    }
+}
+        </pre>
         <pre class="code"></pre>
         <div id="cursor">_</div>
     </div>
@@ -22,34 +59,18 @@
       var mode='normal';
       var col=0;
       var line=0;
-      var codeString = `using System;
-using System.Linq;
-using xxx;
+      const nonSpaceDelimiters = ['(', '[', '{', ')', ']', '}', '.', ',', ';']
+      const delimiters = [...nonSpaceDelimiters, ' ', '']
+      function setCaret(pos){
+        col = pos.col;
+        line = pos.line;
+      }
+      function getCaret(){
+        return {line: line, col: col};
+      }
+      var code = document.getElementById("codestring").innerText.split("\n");
+      normalMode = NewNormalMode(code);
 
-namespace dis_test;
-internal class Program
-{
-  public static void Main(string[] args)
-  {
-    var docid = "14724c8a0n8anwpw98nawlwiuhwL*$rwy8";
-    for(int i=0; i<2; i++)
-    {
-        var asd = new DisClient(asd, qwe);
-        asd.value = "new value";
-
-        Console.Write(asd.ToString());
-    }
-  }
-}`;
-      var code = codeString.split("\n");
-
-      document.addEventListener('DOMContentLoaded', (event) => {
-        document.querySelectorAll('pre.code').forEach((el) => {
-          el.textContent = codeString;
-          hljs.highlightElement(el);
-          document.getElementById("statusbar").innerText = `[${mode}] ${line}:${col} - ${code[line].length}`;
-        })
-      })
       window.addEventListener('keydown', (e) => {
         switch (e.code){
           case "Escape": mode = 'normal'; break;
@@ -63,174 +84,32 @@ internal class Program
         document.getElementById("statusbar").innerText = `[${mode}] ${line}:${col} - ${code[line].length} - ${e.code}`;
       })
 
-
-
-      const nonSpaceDelimiters = ['(', '[', '{', ')', ']', '}', '.', ',', ';']
-      const delimiters = [...nonSpaceDelimiters, ' ', '']
-      function setCaret(pos){
-        col = pos.col;
-        line = pos.line;
-      }
-      function getCaret(){
-        return {line: line, col: col};
-      }
-      function findDelimiterInLine(l, c){
-
-        for(var i=c; i < code[l].length; i++){
-          if(!delimiters.find((x) => x == code[l].charAt(i)))
-            continue;
-
-          return i;
-        }
-        return -1;
-      }
-      function findNextNonEmptySpace(caret){
-        if(code[caret.line].length > 0 && ![' ', ''].find(x => x == code[caret.line].charAt(caret.col)))
-          return caret;
-
-        let startChar = caret.col;
-        for(var j=caret.line; j<code.length; j++){
-          let eol = code[j].length-1;
-          if(startChar>=eol || code[j].length == 0){
-            startChar = 0;
-            continue;
-          }
-          for(var i=startChar; i <= eol; i++){
-            if(![' ', ''].find(x => x == code[j].charAt(i)))
-              return {line: j, col: i};
-          }
-          startChar = 0;
-        }
-
-        return null;
-      }
-      function findPreviousNonEmptySpace(caret){
-        let startChar = caret.col;
-        for(var j=caret.line; j>=0; j--){
-          if(startChar == 0 || code[j].length == 0){
-            startChar = code[j-1].length;
-            continue;
-          }
-
-          for(var i=(startChar - 1); i >= 0; i--){
-            if(![' ', ''].find(x => x == code[j].charAt(i)))
-              return {line: j, col: i};
-          }
-          startChar = code[j-1].length;
-        }
-        return null;
-      }
-
-      function findBeginingOfWord(pos){
-        if(pos.col < 1)
-          return null;
-
-        for(var i=(pos.col - 1); i >= 0; i--){
-          if(delimiters.find(x => x == code[pos.line].charAt(i)))
-            return {line: pos.line, col: i+1};
-        }
-        return {line: pos.line, col: 0};
-      }
-      function findEndOfWord(pos){
-        var eol = code[pos.line].length;
-        if(pos.col > eol - 1)
-          return null;
-
-        for(var i=(pos.col + 1); i < eol; i++){
-          if(delimiters.find(x => x == code[pos.line].charAt(i)))
-            return {line: pos.line, col: i-1};
-        }
-        return {line: pos.line, col: eol};
-      }
-
-      var normalMode = {
-        moveLeft: (c)=>{ if(col>0) col-- },
-        moveDown: (c)=>{ if(line < code.length) line++ },
-        moveUp: (c)=>{ if(line>0) line-- },
-        moveRight: (c)=>{ if(col < (code[line].length-1)) col++ },
-        nextWord: (c)=>{
-          let caret = getCaret();
-          let eol = code[caret.line].length - 1;
-
-          // it is on top of a word
-          if(code[caret.line].length > 0 && !delimiters.find(x => x == code[caret.line].charAt(caret.col))){
-            caret = findEndOfWord(caret);
-          }
-          caret.col++;
-
-          if(caret.col > eol)
-            caret = {line: caret.line+1, col:0};
-
-          caret = findNextNonEmptySpace(caret);
-
-          setCaret(caret);
-       },
-       nextEndOfWord: (c)=>{
-         let caret = getCaret();
-         let eol = code[caret.line].length - 1;
-
-         // it is on top of a word, return end of word
-         if(code[caret.line].length > 0 && caret.col < eol && !delimiters.find(x => x == code[caret.line].charAt(caret.col + 1))){
-           caret = findEndOfWord(caret);
-           setCaret(caret);
-           return;
-         }
-         caret.col++;
-         if(nonSpaceDelimiters.find(x => x == code[caret.line].charAt(caret.col))){
-           setCaret(caret);
-           return;
-         }
-
-         if(caret.col >= eol)
-           caret = {line: caret.line+1, col:0};
-
-         caret = findNextNonEmptySpace(caret);
-         if(!delimiters.find(x => x == code[caret.line].charAt(caret.col)))
-           caret = findEndOfWord(caret);
-
-         setCaret(caret);
-       },
-        previousWord: (c)=>{
-          let caret = getCaret();
-          // it is in the middle of a word
-          if(caret.col > 0 && !delimiters.find(x => x == code[caret.line].charAt(caret.col - 1))){
-            pos = findBeginingOfWord(getCaret());
-            setCaret(pos);
-            return;
-          }
-
-          pos = findPreviousNonEmptySpace(getCaret());
-          if(!delimiters.find(x => x == code[pos.line].charAt(pos.col)))
-            pos = findBeginingOfWord(pos);
-
-          setCaret(pos);
-        }
-      }
-
       function processKeyNormalMode(key) {
-        let c=document.getElementById('cursor');
+        let c = document.getElementById('cursor');
+        let pos = getCaret();
         switch(key){
-          case "0": col = 0; break;
-          case "$": col = code[line].length; break;
+          case "0": pos.col = 0; break;
+          case "$": pos.col = code[pos.line].length; break;
 
-          case "h": normalMode.moveLeft(c);break;
-          case "j": normalMode.moveDown(c);break;
-          case "k": normalMode.moveUp(c);break;
-          case "l": normalMode.moveRight(c);break;
+          case "h": pos = normalMode.moveLeft(pos);break;
+          case "j": pos = normalMode.moveDown(pos);break;
+          case "k": pos = normalMode.moveUp(pos);break;
+          case "l": pos = normalMode.moveRight(pos);break;
 
-          case "w": normalMode.nextWord(c); break;
-          case "e": normalMode.nextEndOfWord(c); break;
-          case "b": normalMode.previousWord(c); break;
+          case "w": pos = normalMode.nextWord(pos); break;
+          case "e": pos = normalMode.nextEndOfWord(pos); break;
+          case "b": pos = normalMode.previousWord(pos); break;
 
           case "i": mode = 'insert'; break;
           case "v": mode = 'visual'; break;
         }
-        var cursorCol = col < code[line].length ? col : code[line].length - 1;
+        let cursorCol = pos.col < code[pos.line].length ? pos.col : code[pos.line].length - 1;
         if(cursorCol < 0)
           cursorCol = 0;
 
         c.style.left = (cursorCol * 1.23) + "ch";
-        c.style.top = (line * 1.2) + "rem";
+        c.style.top = (pos.line * 1.2) + "rem";
+        setCaret(pos);
       }
       function processKeyInsertMode(key) {
         let c=document.getElementById('cursor');
