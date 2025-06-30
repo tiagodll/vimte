@@ -6,34 +6,11 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/csharp.min.js"></script>
         <!-- HTML -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css" />
+        <link rel="stylesheet" href="./app.css" />
+
+        <script src="./asd"></script>
     </head>
-    <style>
-        document {line-height: 1.2rem;}
-        .code-container{position: relative;}
-        .code{
-            line-height: 1.2rem;
-            white-space: pre;
-            font-family: 'Fira Code', monospace;
-            background: transparent;
-        }
-        @supports(font-variation-settings: normal){
-            .code{font-family: 'Fira Code VF', monospace;}
-        }
-        #cursor{
-            top: 0;
-            left: 0;
-            z-index: -1;
-            width: 1cw;
-            min-width: 1cw;
-            background: #ccccff;
-            position: absolute;
-        }
-        #statusbar{
-            border: solid black 1px;
-            background: #eeeecc;
-        }
-    </style>
 </head>
 <body>
     <div class="code-container">
@@ -88,8 +65,8 @@ internal class Program
 
 
 
-      const delimiters = ['(', '[', '{', ')', ']', '}', '.', ',', ';', ' ', '']
       const nonSpaceDelimiters = ['(', '[', '{', ')', ']', '}', '.', ',', ';']
+      const delimiters = [...nonSpaceDelimiters, ' ', '']
       function setCaret(pos){
         col = pos.col;
         line = pos.line;

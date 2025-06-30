@@ -1,0 +1,30 @@
+document {
+    line-height: 1.2rem;
+}
+.code-container {
+    position: relative;
+}
+.code {
+    line-height: 1.2rem;
+    white-space: pre;
+    font-family: "Fira Code", monospace;
+    background: transparent;
+}
+@supports (font-variation-settings: normal) {
+    .code {
+        font-family: "Fira Code VF", monospace;
+    }
+}
+#cursor {
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 1cw;
+    min-width: 1cw;
+    background: #ccccff;
+    position: absolute;
+}
+#statusbar {
+    border: solid black 1px;
+    background: #eeeecc;
+}
