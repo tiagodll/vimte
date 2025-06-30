@@ -1,11 +1,6 @@
 <html>
     <head>
         <title>vim game</title>
-        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/csharp.min.js"></script> -->
-        <!-- HTML -->
-        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css"> -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/vs.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css" />
         <link rel="stylesheet" href="./app.css" />
@@ -25,7 +20,7 @@
         document.querySelectorAll('pre.code').forEach((el) => {
           el.textContent = document.getElementById("codestring").innerText;
           hljs.highlightElement(el);
-          document.getElementById("statusbar").innerText = `[${mode}] ${line}:${col} - ${code[line].length}`;
+          document.getElementById("statusbar").innerText = `[${model.mode}] ${model.line}:${model.col} - ${code[model.line].length}`;
         })
       })
     </script>
@@ -50,46 +45,45 @@ internal class Program
         }
     }
 }
-        </pre>
+</pre>
         <pre class="code"></pre>
         <div id="cursor">_</div>
     </div>
     <div id="statusbar"></div>
     <script type="text/javascript">
-      var mode='normal';
-      var col=0;
-      var line=0;
+      let model = {
+        mode: "normal",
+        col: 0,
+        line: 0,
+        partialKey: "",
+        getCaret(){ return {col: this.col, line: this.line}; },
+        setCaret(pos){ this.col = pos.col; this.line = pos.line; },
+      }
       const nonSpaceDelimiters = ['(', '[', '{', ')', ']', '}', '.', ',', ';']
       const delimiters = [...nonSpaceDelimiters, ' ', '']
-      function setCaret(pos){
-        col = pos.col;
-        line = pos.line;
-      }
-      function getCaret(){
-        return {line: line, col: col};
-      }
-      var code = document.getElementById("codestring").innerText.split("\n");
+      let code = document.getElementById("codestring").innerText.split("\n");
       normalMode = NewNormalMode(code);
 
       window.addEventListener('keydown', (e) => {
         switch (e.code){
-          case "Escape": mode = 'normal'; break;
+          case "Escape": model.mode = 'normal'; break;
           default:
-            switch(mode){
+            switch(model.mode){
               case 'normal': processKeyNormalMode(e.key);break;
               case 'visual': processKeyVisualMode(e.key);break;
               case 'insert': processKeyInsertMode(e.key);break;
             }
         }
-        document.getElementById("statusbar").innerText = `[${mode}] ${line}:${col} - ${code[line].length} - ${e.code}`;
+        document.getElementById("statusbar").innerText = `[${model.mode}] ${model.line}:${model.col} - ${code[model.line].length} - ${e.code}`;
       })
 
       function processKeyNormalMode(key) {
         let c = document.getElementById('cursor');
-        let pos = getCaret();
+        let pos = model.getCaret();
         switch(key){
           case "0": pos.col = 0; break;
           case "$": pos.col = code[pos.line].length; break;
+          case "G": pos.line = code.length -1; break;
 
           case "h": pos = normalMode.moveLeft(pos);break;
           case "j": pos = normalMode.moveDown(pos);break;
@@ -100,8 +94,8 @@ internal class Program
           case "e": pos = normalMode.nextEndOfWord(pos); break;
           case "b": pos = normalMode.previousWord(pos); break;
 
-          case "i": mode = 'insert'; break;
-          case "v": mode = 'visual'; break;
+          case "i": model.mode = 'insert'; break;
+          case "v": model.mode = 'visual'; break;
         }
         let cursorCol = pos.col < code[pos.line].length ? pos.col : code[pos.line].length - 1;
         if(cursorCol < 0)
@@ -109,7 +103,7 @@ internal class Program
 
         c.style.left = (cursorCol * 1.23) + "ch";
         c.style.top = (pos.line * 1.2) + "rem";
-        setCaret(pos);
+        model.setCaret(pos);
       }
       function processKeyInsertMode(key) {
         let c=document.getElementById('cursor');
