@@ -49,6 +49,7 @@ internal class Program
         <pre class="code"></pre>
         <div id="cursor">_</div>
         <div id="target">_</div>
+        <div id="counter">0</div>
     </div>
     <div id="statusbar"></div>
     <script type="text/javascript">
@@ -119,8 +120,10 @@ internal class Program
         if(pos.line >= code.length)
           pos.line = code.length-1;
 
-        if(model.partialKey == null || model.partialKey == "")
+        if(model.partialKey == null || model.partialKey == ""){
           model.counter++;
+          document.getElementById('counter').innerText = model.counter;
+        }
 
         model.setCaret(pos);
         let uiCaret = {
@@ -130,7 +133,7 @@ internal class Program
         setObjectPosition(c, uiCaret);
 
         if(model.caret.line == model.target.line && model.caret.col == model.target.col)
-          alert("YAY!!!!")
+          alert(`you did it in ${model.counter} YAY!!!!`)
       }
 
       function setObjectPosition(target, pos){

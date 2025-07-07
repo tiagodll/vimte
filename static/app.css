@@ -35,3 +35,10 @@ document {
     border: solid black 1px;
     background: #eeeecc;
 }
+#counter {
+    position: absolute;
+    top: 1vh;
+    right: 3vh;
+    color: #ff6666;
+    font-size: 3rem;
+}
