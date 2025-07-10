@@ -12,9 +12,8 @@
 <body>
     <script type="module">
       import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js';
-      //  and it's easy to individually load additional languages
-      import csharp from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/csharp.min.js';
-      hljs.registerLanguage('csharp', csharp);
+      import lang from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/languages/{{ .import_lang }}.min.js';
+      hljs.registerLanguage('{{ .lang_code }}', lang);
 
       document.addEventListener('DOMContentLoaded', (event) => {
         document.querySelectorAll('pre.code').forEach((el) => {
@@ -25,31 +24,59 @@
       })
     </script>
     <div class="code-container">
-        <pre id="codestring" class="codestring" style="display:none">
-using System;
-using System.Linq;
-using xxx;
-
-namespace dis_test;
-internal class Program
-{
-    public static void Main(string[] args)
-    {
-        var docid = "14724c8a0n8anwpw98nawlwiuhwL*$rwy8";
-        for(int i=0; i<2; i++)
-        {
-            var asd = new DisClient(asd, qwe);
-            asd.value = "new value";
-
-            Console.Write(asd.ToString());
-        }
-    }
-}
-</pre>
+        <pre id="codestring" class="codestring" style="display:none">{{ .code }}</pre>
         <pre class="code"></pre>
         <div id="cursor">_</div>
         <div id="target">_</div>
         <div id="counter">0</div>
+        <div id="keyboard">
+            <div class="key kEscape">Esc</div>
+            <br>
+            <div class="key k1">1</div>
+            <div class="key k2">2</div>
+            <div class="key k3">3</div>
+            <div class="key k4">4</div>
+            <div class="key k5">5</div>
+            <div class="key k6">6</div>
+            <div class="key k7">7</div>
+            <div class="key k8">8</div>
+            <div class="key k9">9</div>
+            <div class="key k0">0</div>
+            <br>
+            <div class="key kq">q</div>
+            <div class="key kw">w</div>
+            <div class="key ke">e</div>
+            <div class="key kr">r</div>
+            <div class="key kt">t</div>
+            <div class="key ky">y</div>
+            <div class="key ku">u</div>
+            <div class="key ki">i</div>
+            <div class="key ko">o</div>
+            <div class="key kp">p</div>
+            <br>
+            <div class="key ka">a</div>
+            <div class="key ks">s</div>
+            <div class="key kd">d</div>
+            <div class="key kf">f</div>
+            <div class="key kg">g</div>
+            <div class="key kh">h</div>
+            <div class="key kj">j</div>
+            <div class="key kk">k</div>
+            <div class="key kl">l</div>
+            <div class="key kz">z</div>
+            <br>
+            <div class="key kz">z</div>
+            <div class="key kx">x</div>
+            <div class="key kc">c</div>
+            <div class="key kv">v</div>
+            <div class="key kb">b</div>
+            <div class="key kn">n</div>
+            <div class="key km">m</div>
+            <div class="key kcoma">,</div>
+            <div class="key kdot">.</div>
+            <div class="key kslash">/</div>
+
+        </div>
     </div>
     <div id="statusbar"></div>
     <script type="text/javascript">
@@ -66,10 +93,9 @@ internal class Program
       const delimiters = [...nonSpaceDelimiters, ' ', '']
       let code = document.getElementById("codestring").innerText.split("\n");
       normalMode = NewNormalMode(code);
+      setKeyboardNormalMode("");
 
 
-      // retry how many times?
-      //
       var i=0
       do{
         model.target.line = Math.floor(Math.random()*code.length);
@@ -79,7 +105,7 @@ internal class Program
 
       window.addEventListener('keydown', (e) => {
         switch (e.code){
-          case "Escape": model.mode = 'normal'; break;
+          case "Escape": model.mode = 'normal'; setKeyboardNormalMode(); break;
           default:
             switch(model.mode){
               case 'normal': processKeyNormalMode(e.key);break;
@@ -111,8 +137,8 @@ internal class Program
           case "e": pos = normalMode.nextEndOfWord(pos); break;
           case "b": pos = normalMode.previousWord(pos); break;
 
-          case "i": model.mode = 'insert'; break;
-          case "v": model.mode = 'visual'; break;
+          case "i": model.mode = 'insert'; setKeyboardInsertMode(); break;
+          case "v": model.mode = 'visual'; setKeyboardVisualMode(); break;
         }
 
         if(pos.col < 0)
@@ -136,29 +162,75 @@ internal class Program
           alert(`you did it in ${model.counter} YAY!!!!`)
       }
 
+      function setKeyboardNormalMode(currentKeys){
+        document.querySelector("#keyboard").classList.add("normal");
+        document.querySelector("#keyboard").classList.remove("insert");
+        document.querySelector("#keyboard").classList.remove("visual");
+        switch(currentKeys){
+          case "g": break;
+          default: setKeysNormalModeDefault();
+        }
+      }
+
+      function setKeysNormalModeDefault(){
+        document.querySelectorAll("#keyboard .key").forEach((item) => {
+          item.classList.remove('enabled');
+        })
+        enableKeys(['Escape', '0', 'g', 'h', 'j', 'k', 'l', 'w', 'e', 'b', 'i', 'v']);
+      }
+      function setKeyboardVisualMode(){
+        document.querySelector("#keyboard").classList.remove("normal");
+        document.querySelector("#keyboard").classList.remove("insert");
+        document.querySelector("#keyboard").classList.add("visual");
+        document.querySelectorAll("#keyboard .key").forEach((item) => {
+          item.classList.remove('enabled');
+        })
+        enableKeys(['Escape']);
+      }
+
+      function setKeyboardInsertMode(){
+        document.querySelector("#keyboard").classList.remove("normal");
+        document.querySelector("#keyboard").classList.add("insert");
+        document.querySelector("#keyboard").classList.remove("visual");
+        document.querySelectorAll("#keyboard .key").forEach((item) => {
+          item.classList.remove('enabled');
+          item.classList.add('enabled');
+        });
+        enableKeys(['Escape']);
+      }
+
+      function enableKeys(ids){
+        ids.forEach((id)=>{
+          document.querySelector("#keyboard .key.k" + id).classList.add("enabled");
+          document.querySelector("#keyboard .key.k" + id).onclick = (e) => {
+            window.dispatchEvent(new KeyboardEvent('keydown', {'key': id, 'code': id}));
+          };
+        });
+      }
+
       function setObjectPosition(target, pos){
         target.style.left = (pos.col * 1.23) + "ch";
         target.style.top = (pos.line * 1.2) + "rem";
       }
       function processKeyInsertMode(key) {
-        let c=document.getElementById('cursor');
+        // let pos = model.getCaret();
 
-        var cursorCol = col < code[line].length ? col : code[line].length - 1;
-        if(cursorCol < 0)
-          cursorCol = 0;
+        // var cursorCol = pos.col < code[pos.line].length ? pos.col : code[pos.line].length - 1;
+        // if(cursorCol < 0)
+        //   cursorCol = 0;
 
-        c.style.left = (cursorCol * 1.23) + "ch";
-        c.style.top = (line * 1.2) + "rem";
+        // c.style.left = (cursorCol * 1.23) + "ch";
+        // c.style.top = (pos.line * 1.2) + "rem";
       }
       function processKeyVisualMode(key) {
-        let c=document.getElementById('cursor');
+        // let pos = model.getCaret();
 
-        var cursorCol = col < code[line].length ? col : code[line].length - 1;
-        if(cursorCol < 0)
-          cursorCol = 0;
+        // var cursorCol = pos.col < code[pos.line].length ? pos.col : code[pos.line].length - 1;
+        // if(cursorCol < 0)
+        //   cursorCol = 0;
 
-        c.style.left = (cursorCol * 1.23) + "ch";
-        c.style.top = (line * 1.2) + "rem";
+        // c.style.left = (cursorCol * 1.23) + "ch";
+        // c.style.top = (pos.line * 1.2) + "rem";
       }
     </script>
 </body>
