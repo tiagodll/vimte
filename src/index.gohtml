@@ -5,6 +5,7 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css" />
         <link rel="stylesheet" href="/static/app.css" />
 
+        <script src="/static/vimkeyboard.js"></script>
         <script src="/static/navigationHelper.js"></script>
         <script src="/static/normalMode.js"></script>
     </head>
@@ -22,6 +23,11 @@
           document.getElementById("statusbar").innerText = `[${model.mode}] ${model.caret.line}:${model.caret.col} - ${code[model.caret.line].length}`;
         })
       })
+
+      if ("virtualKeyboard" in navigator) {
+        navigator.virtualKeyboard.overlaysContent = true;
+      }
+
     </script>
     <div class="code-container">
         <pre id="codestring" class="codestring" style="display:none">{{ .code }}</pre>
@@ -29,54 +35,7 @@
         <div id="cursor">_</div>
         <div id="target">_</div>
         <div id="counter">0</div>
-        <div id="keyboard">
-            <div class="key kEscape">Esc</div>
-            <br>
-            <div class="key k1">1</div>
-            <div class="key k2">2</div>
-            <div class="key k3">3</div>
-            <div class="key k4">4</div>
-            <div class="key k5">5</div>
-            <div class="key k6">6</div>
-            <div class="key k7">7</div>
-            <div class="key k8">8</div>
-            <div class="key k9">9</div>
-            <div class="key k0">0</div>
-            <br>
-            <div class="key kq">q</div>
-            <div class="key kw">w</div>
-            <div class="key ke">e</div>
-            <div class="key kr">r</div>
-            <div class="key kt">t</div>
-            <div class="key ky">y</div>
-            <div class="key ku">u</div>
-            <div class="key ki">i</div>
-            <div class="key ko">o</div>
-            <div class="key kp">p</div>
-            <br>
-            <div class="key ka">a</div>
-            <div class="key ks">s</div>
-            <div class="key kd">d</div>
-            <div class="key kf">f</div>
-            <div class="key kg">g</div>
-            <div class="key kh">h</div>
-            <div class="key kj">j</div>
-            <div class="key kk">k</div>
-            <div class="key kl">l</div>
-            <div class="key kz">z</div>
-            <br>
-            <div class="key kz">z</div>
-            <div class="key kx">x</div>
-            <div class="key kc">c</div>
-            <div class="key kv">v</div>
-            <div class="key kb">b</div>
-            <div class="key kn">n</div>
-            <div class="key km">m</div>
-            <div class="key kcoma">,</div>
-            <div class="key kdot">.</div>
-            <div class="key kslash">/</div>
-
-        </div>
+        <vim-keyboard mode="normal"></vim-keyboard>
     </div>
     <div id="statusbar"></div>
     <script type="text/javascript">
@@ -93,7 +52,6 @@
       const delimiters = [...nonSpaceDelimiters, ' ', '']
       let code = document.getElementById("codestring").innerText.split("\n");
       normalMode = NewNormalMode(code);
-      setKeyboardNormalMode("");
 
 
       var i=0
@@ -105,7 +63,7 @@
 
       window.addEventListener('keydown', (e) => {
         switch (e.code){
-          case "Escape": model.mode = 'normal'; setKeyboardNormalMode(); break;
+          case "Escape": setKeyboardMode('normal'); break;
           default:
             switch(model.mode){
               case 'normal': processKeyNormalMode(e.key);break;
@@ -115,6 +73,11 @@
         }
         document.getElementById("statusbar").innerText = `[${model.mode}] ${model.caret.line}:${model.caret.col} - ${code[model.caret.line].length} - ${model.partialKey} ${e.code} # ${model.counter}`;
       })
+
+      function setKeyboardMode(mode){
+        model.mode = mode;
+        document.querySelector("vim-keyboard").setAttribute("mode", mode);
+      }
 
       function processKeyNormalMode(key) {
         let c = document.getElementById('cursor');
@@ -137,8 +100,8 @@
           case "e": pos = normalMode.nextEndOfWord(pos); break;
           case "b": pos = normalMode.previousWord(pos); break;
 
-          case "i": model.mode = 'insert'; setKeyboardInsertMode(); break;
-          case "v": model.mode = 'visual'; setKeyboardVisualMode(); break;
+          case "i": setKeyboardMode('insert'); break;
+          case "v": setKeyboardMode('visual'); break;
         }
 
         if(pos.col < 0)
@@ -160,52 +123,6 @@
 
         if(model.caret.line == model.target.line && model.caret.col == model.target.col)
           alert(`you did it in ${model.counter} YAY!!!!`)
-      }
-
-      function setKeyboardNormalMode(currentKeys){
-        document.querySelector("#keyboard").classList.add("normal");
-        document.querySelector("#keyboard").classList.remove("insert");
-        document.querySelector("#keyboard").classList.remove("visual");
-        switch(currentKeys){
-          case "g": break;
-          default: setKeysNormalModeDefault();
-        }
-      }
-
-      function setKeysNormalModeDefault(){
-        document.querySelectorAll("#keyboard .key").forEach((item) => {
-          item.classList.remove('enabled');
-        })
-        enableKeys(['Escape', '0', 'g', 'h', 'j', 'k', 'l', 'w', 'e', 'b', 'i', 'v']);
-      }
-      function setKeyboardVisualMode(){
-        document.querySelector("#keyboard").classList.remove("normal");
-        document.querySelector("#keyboard").classList.remove("insert");
-        document.querySelector("#keyboard").classList.add("visual");
-        document.querySelectorAll("#keyboard .key").forEach((item) => {
-          item.classList.remove('enabled');
-        })
-        enableKeys(['Escape']);
-      }
-
-      function setKeyboardInsertMode(){
-        document.querySelector("#keyboard").classList.remove("normal");
-        document.querySelector("#keyboard").classList.add("insert");
-        document.querySelector("#keyboard").classList.remove("visual");
-        document.querySelectorAll("#keyboard .key").forEach((item) => {
-          item.classList.remove('enabled');
-          item.classList.add('enabled');
-        });
-        enableKeys(['Escape']);
-      }
-
-      function enableKeys(ids){
-        ids.forEach((id)=>{
-          document.querySelector("#keyboard .key.k" + id).classList.add("enabled");
-          document.querySelector("#keyboard .key.k" + id).onclick = (e) => {
-            window.dispatchEvent(new KeyboardEvent('keydown', {'key': id, 'code': id}));
-          };
-        });
       }
 
       function setObjectPosition(target, pos){
