@@ -1,4 +1,15 @@
 class VimKeyboard extends HTMLElement {
+  static keyCodes = [
+    { label: 'Esc', code: 'Escape' }, { label: 'Shift', code: 'Shift' },
+    { label: '1', code: 'd1' }, { label: '2', code: 'd2' }, { label: '3', code: 'd3' }, { label: '4', code: 'd4' }, { label: '5', code: 'd5' }, { label: '6', code: 'd6' }, { label: '7', code: 'd7' }, { label: '8', code: 'd8' }, { label: '9', code: 'd9' }, { label: '0', code: 'd0' },
+    { label: 'q', code: 'lkq' }, { label: 'w', code: 'lkw' }, { label: 'e', code: 'lke' }, { label: 'r', code: 'lkr' }, { label: 't', code: 'lkt' }, { label: 'y', code: 'lky' }, { label: 'u', code: 'lku' }, { label: 'i', code: 'lki' }, { label: 'o', code: 'lko' }, { label: 'p', code: 'lkp' },
+    { label: 'a', code: 'lka' }, { label: 's', code: 'lks' }, { label: 'd', code: 'lkd' }, { label: 'f', code: 'lkf' }, { label: 'g', code: 'lkg' }, { label: 'h', code: 'lkh' }, { label: 'j', code: 'lkj' }, { label: 'k', code: 'lkk' }, { label: 'l', code: 'lkl' },
+    { label: 'z', code: 'lkz' }, { label: 'x', code: 'lkx' }, { label: 'c', code: 'lkc' }, { label: 'v', code: 'lkv' }, { label: 'b', code: 'lkb' }, { label: 'n', code: 'lkn' }, { label: 'm', code: 'lkm' },
+    { label: '!', code: 'hkExclamation' }, { label: '@', code: 'hkAt' }, { label: '#', code: 'hkHash' }, { label: '$', code: 'hkDollar' }, { label: '%', code: 'hkPercent' }, { label: 'ˆ', code: 'hkHat' }, { label: '&', code: 'hkAmp' }, { label: '*', code: 'hkStar' }, { label: '(', code: 'hkOpenParentesis' }, { label: ')', code: 'hkCloseParentesis' },
+    { label: 'Q', code: 'hkQ' }, { label: 'W', code: 'hkW' }, { label: 'E', code: 'hkE' }, { label: 'R', code: 'hkR' }, { label: 'T', code: 'hkT' }, { label: 'Y', code: 'hkY' }, { label: 'U', code: 'hkU' }, { label: 'I', code: 'hkI' }, { label: 'O', code: 'hkO' }, { label: 'P', code: 'hkP' },
+    { label: 'A', code: 'hkA' }, { label: 'S', code: 'hkS' }, { label: 'D', code: 'hkD' }, { label: 'F', code: 'hkF' }, { label: 'G', code: 'hkG' }, { label: 'H', code: 'hkH' }, { label: 'J', code: 'hkJ' }, { label: 'K', code: 'hkK' }, { label: 'L', code: 'hkL' },
+    { label: 'Z', code: 'hkZ' }, { label: 'X', code: 'hkX' }, { label: 'C', code: 'hkC' }, { label: 'V', code: 'hkV' }, { label: 'B', code: 'hkB' }, { label: 'N', code: 'hkN' }, { label: 'M', code: 'hkM' },
+  ];
     constructor() {
         super();
 
@@ -56,7 +67,7 @@ class VimKeyboard extends HTMLElement {
     }
 
     connectedCallback() {
-      let bShift = this.makebutton("Shift", (e) => {
+      let bShift = this.makeButton("Shift", (e) => {
         if(this["shift"]){
           this["shift"] = false;
           this.shadowRoot.querySelector(".vim-keyboard").classList.remove("shift");
@@ -66,8 +77,11 @@ class VimKeyboard extends HTMLElement {
         }
       });
       bShift.classList.add("enabled");
-      this.shadowRoot.querySelector(".vim-keyboard").append(bShift, this.makebutton("Escape"));
-      this.enableKeys(['Escape']);
+
+      this.shadowRoot.querySelector(".vim-keyboard").append(bShift, this.makeButton("Esc"));
+      this.enableKeys(['Esc']);
+
+
       this.makeLayoutButtons(this.shadowRoot.querySelector('.normal-layout'), [
         ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
         ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -86,21 +100,27 @@ class VimKeyboard extends HTMLElement {
     makeLayoutButtons(layout, buttons){
       buttons.forEach(row => {
         row.forEach(button => {
-          layout.append(this.makebutton(button));
+          layout.append(this.makeButton(button));
         });
         layout.append(document.createElement("br"))
       });
     }
 
-    makebutton(label, onclick){
-      let div = document.createElement("div");
-      div.classList.add("key")
-      div.classList.add("k"+label)
-      div.append(label)
-      if(onclick != null){
-        div.onclick = onclick;
+    makeButton(label, onclick){
+      try{
+        let id = VimKeyboard.keyCodes.find(x => x.label == label).code;
+        let div = document.createElement("div");
+        div.classList.add("key")
+        div.classList.add(id)
+        div.append(label)
+
+        if(onclick != null){
+          div.onclick = onclick;
+        }
+        return div
+      }catch(error){
+        console.log("error: ", label, error);
       }
-      return div
     }
 
     static get observedAttributes() {
@@ -129,7 +149,8 @@ class VimKeyboard extends HTMLElement {
       this.shadowRoot.querySelectorAll(".vim-keyboard .layout .key").forEach((item) => {
         item.classList.remove('enabled');
       })
-      this.enableKeys(['0', 'g', 'G', 'h', 'j', 'k', 'l', 'w', 'e', 'b', 'i', 'v']);
+      this.enableKeys(['0', 'g', 'h', 'j', 'k', 'l', 'w', 'e', 'b', 'i', 'v']);
+      this.enableKeys(['$', 'G']);
     }
     setInsertMode(){
       this.shadowRoot.querySelectorAll(".vim-keyboard .layout .key").forEach((item) => {
@@ -141,7 +162,7 @@ class VimKeyboard extends HTMLElement {
       this.shadowRoot.querySelectorAll(".vim-keyboard .layout .key").forEach((item) => {
         item.classList.remove('enabled');
       })
-      this.enableKeys([]);
+      // this.enableKeys([]);
     }
 
     enableKeys(ids){
@@ -153,13 +174,14 @@ class VimKeyboard extends HTMLElement {
           };
       });
       } else {
-        ids.forEach((id) => {
-          let key = this.shadowRoot.querySelector(".vim-keyboard .key.k" + id);
+        ids.forEach((label) => {
+          let id = VimKeyboard.keyCodes.find(x => x.label == label).code;
+          let key = this.shadowRoot.querySelector(".vim-keyboard .key." + id);
           if (key == null)
             return;
           key.classList.add("enabled");
           key.onclick = (e) => {
-            window.dispatchEvent(new KeyboardEvent('keydown', { 'key': id, 'code': id }));
+            window.dispatchEvent(new KeyboardEvent('keydown', { 'key': label, 'code': id }));
           };
         });
       }
