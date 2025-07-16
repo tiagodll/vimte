@@ -149,7 +149,7 @@ class VimKeyboard extends HTMLElement {
       this.shadowRoot.querySelectorAll(".vim-keyboard .layout .key").forEach((item) => {
         item.classList.remove('enabled');
       })
-      this.enableKeys(['0', 'g', 'h', 'j', 'k', 'l', 'w', 'e', 'b', 'i', 'v']);
+      this.enableKeys(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'g', 'h', 'j', 'k', 'l', 'w', 'e', 'b', 'i', 'v']);
       this.enableKeys(['$', 'G']);
     }
     setInsertMode(){

@@ -45,7 +45,7 @@ document {
 
 #command {
     position: absolute;
-    top: 3vh;
+    top: calc(1vh + 3rem);
     right: 3vh;
     color: green;
     font-size: 3rem;
