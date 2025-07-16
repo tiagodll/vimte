@@ -12,7 +12,10 @@ import (
 )
 
 func main() {
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(os.Getenv("STATIC_PATH")))))
+
+	config := GetEnvConfig()
+
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(config.StaticPath))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
@@ -20,27 +23,29 @@ func main() {
 			return
 		}
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		RenderGame("cpp.cpp", w)
+		RenderGame(config, "cpp.cpp", w)
 	})
 
 	http.HandleFunc("/{code}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		code := r.PathValue("code")
-		RenderGame(code, w)
+		RenderGame(config, code, w)
 	})
 
-	log.Println("Server starting on " + os.Getenv("APP_PORT"))
-	log.Fatal(http.ListenAndServe(os.Getenv("APP_PORT"), nil))
+	log.Println("Server starting on " + config.AppPort)
+	log.Println("code files: " + config.CodePath)
+	log.Println("static files: " + config.StaticPath)
+	log.Fatal(http.ListenAndServe(config.AppPort, nil))
 }
 
 // func enableCors(w *http.ResponseWriter) {
 // 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 // }
 
-func RenderGame(code string, w http.ResponseWriter) {
+func RenderGame(config Config, code string, w http.ResponseWriter) {
 
 	code_ext := filepath.Ext(code)
-	data_bytes, _ := os.ReadFile("../code_files/" + code)
+	data_bytes, _ := os.ReadFile(config.CodePath + "/" + code)
 	data := map[string]any{
 		"code":        fmt.Sprintf("%s", data_bytes),
 		"import_lang": GetImportLang(code_ext),

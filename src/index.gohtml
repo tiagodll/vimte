@@ -35,6 +35,7 @@
         <div id="cursor">_</div>
         <div id="target">_</div>
         <div id="counter">0</div>
+        <div id="command"></div>
         <vim-keyboard mode="normal"></vim-keyboard>
     </div>
     <div id="statusbar"></div>
@@ -45,6 +46,7 @@
         caret: {col: 0, line: 0},
         target: {col: 0, line: 0},
         partialKey: "",
+        multiplier: "",
         getCaret(){ return {col: this.caret.col, line: this.caret.line}; },
         setCaret(pos){ this.caret.col = pos.col; this.caret.line = pos.line; },
       }
@@ -71,7 +73,7 @@
               case 'insert': processKeyInsertMode(e.key);break;
             }
         }
-        document.getElementById("statusbar").innerText = `[${model.mode}] ${model.caret.line}:${model.caret.col} - ${code[model.caret.line].length} - ${model.partialKey} ${e.code} # ${model.counter}`;
+        document.getElementById("statusbar").innerText = `[${model.mode}] ${model.caret.line}:${model.caret.col} - ${code[model.caret.line].length} - ${model.multiplier} ${model.partialKey} ${e.code} # ${model.counter}`;
       })
 
       function setKeyboardMode(mode){
@@ -83,43 +85,71 @@
         let c = document.getElementById('cursor');
         let pos = model.getCaret();
         let command = model.partialKey == null ? key : model.partialKey + key;
+        let multiplier = 1;
 
-        switch(command){
-          case "0": pos.col = 0; break;
-          case "$": pos.col = code[pos.line].length; break;
-          case "G": pos.line = code.length -1; break;
-          case "g": model.partialKey = "g"; break;
-          case "gg": pos.line = 0; model.partialKey = null; break
-
-          case "h": pos = normalMode.moveLeft(pos);break;
-          case "j": pos = normalMode.moveDown(pos);break;
-          case "k": pos = normalMode.moveUp(pos);break;
-          case "l": pos = normalMode.moveRight(pos);break;
-
-          case "w": pos = normalMode.nextWord(pos); break;
-          case "e": pos = normalMode.nextEndOfWord(pos); break;
-          case "b": pos = normalMode.previousWord(pos); break;
-
-          case "i": setKeyboardMode('insert'); break;
-          case "v": setKeyboardMode('visual'); break;
-        }
-
-        if(pos.col < 0)
+        if(model.multiplier == "" && command == "0"){
           pos.col = 0;
-        if(pos.line >= code.length)
-          pos.line = code.length-1;
-
-        if(model.partialKey == null || model.partialKey == ""){
-          model.counter++;
-          document.getElementById('counter').innerText = model.counter;
+          model.setCaret(pos);
+          let uiCaret = {
+            line: pos.line,
+            col: (pos.col > code[pos.line].length) ? code[pos.line].length - 1 : pos.col
+          };
+          setObjectPosition(c, uiCaret);
+          return;
         }
 
-        model.setCaret(pos);
-        let uiCaret = {
-          line: pos.line,
-          col: (pos.col > code[pos.line].length) ? code[pos.line].length - 1 : pos.col
-        };
-        setObjectPosition(c, uiCaret);
+        if(/^\d+$/.test(command))
+        {
+          model.multiplier += command;
+          document.querySelector("#command").innerHTML = model.multiplier;
+          return;
+        }else if(model.multiplier != ""){
+          multiplier = parseInt(model.multiplier)
+        }
+
+        // pre commands:
+        if(command == "g"){
+            model.partialKey = command;
+            return;
+        }
+
+        document.querySelector("#command").innerHTML = model.multiplier + command;
+
+        for(i=0; i<multiplier; i++){
+          switch(command){
+            case "$": pos.col = code[pos.line].length; break;
+            case "gg": pos.line = 0; model.partialKey = null; break
+
+            case "h": pos = normalMode.moveLeft(pos);break;
+            case "j": pos = normalMode.moveDown(pos);break;
+            case "k": pos = normalMode.moveUp(pos);break;
+            case "l": pos = normalMode.moveRight(pos);break;
+
+            case "w": pos = normalMode.nextWord(pos); break;
+            case "e": pos = normalMode.nextEndOfWord(pos); break;
+            case "b": pos = normalMode.previousWord(pos); break;
+
+            case "i": setKeyboardMode('insert'); break;
+            case "v": setKeyboardMode('visual'); break;
+          }
+          if(pos.col < 0)
+            pos.col = 0;
+          if(pos.line >= code.length)
+            pos.line = code.length-1;
+
+          if(model.partialKey == null || model.partialKey == ""){
+            model.counter++;
+            document.getElementById('counter').innerText = model.counter;
+          }
+
+          model.setCaret(pos);
+          let uiCaret = {
+            line: pos.line,
+            col: (pos.col > code[pos.line].length) ? code[pos.line].length - 1 : pos.col
+          };
+          setObjectPosition(c, uiCaret);
+        }
+        model.multiplier = "";
 
         if(model.caret.line == model.target.line && model.caret.col == model.target.col)
           alert(`you did it in ${model.counter} YAY!!!!`)
