@@ -118,7 +118,7 @@
         for(i=0; i<multiplier; i++){
           switch(command){
             case "$": pos.col = code[pos.line].length; break;
-            case "gg": pos.line = 0; model.partialKey = null; break
+            case "gg": pos.line = multiplier-1; model.partialKey = null; break
 
             case "h": pos = normalMode.moveLeft(pos);break;
             case "j": pos = normalMode.moveDown(pos);break;
