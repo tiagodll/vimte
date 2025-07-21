@@ -155,29 +155,25 @@
           alert(`you did it in ${model.counter} YAY!!!!`)
       }
 
+      function getMatchingPair(char){
+        switch(char){
+          case "(": return ")";
+          case ")": return "(";
+          case "[": return "]";
+          case "]": return "[";
+          case "{": return "}";
+          case "}": return "{";
+        }
+        return null;
+      }
+
       function setObjectPosition(target, pos){
         target.style.left = (pos.col * 1.23) + "ch";
         target.style.top = (pos.line * 1.2) + "rem";
       }
       function processKeyInsertMode(key) {
-        // let pos = model.getCaret();
-
-        // var cursorCol = pos.col < code[pos.line].length ? pos.col : code[pos.line].length - 1;
-        // if(cursorCol < 0)
-        //   cursorCol = 0;
-
-        // c.style.left = (cursorCol * 1.23) + "ch";
-        // c.style.top = (pos.line * 1.2) + "rem";
       }
       function processKeyVisualMode(key) {
-        // let pos = model.getCaret();
-
-        // var cursorCol = pos.col < code[pos.line].length ? pos.col : code[pos.line].length - 1;
-        // if(cursorCol < 0)
-        //   cursorCol = 0;
-
-        // c.style.left = (cursorCol * 1.23) + "ch";
-        // c.style.top = (pos.line * 1.2) + "rem";
       }
     </script>
 </body>

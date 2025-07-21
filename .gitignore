@@ -1,0 +1,7 @@
+# Executable
+/src/vimte
+/vimte.service
+/Dockerfile
+
+/.zed
+.env
